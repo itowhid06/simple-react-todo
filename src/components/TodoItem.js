@@ -1,21 +1,23 @@
 import React, {Component} from 'react';
-import Glyphicon from "@strongdm/glyphicon";
+import Glyphicon from '@strongdm/glyphicon';
+import {TodoActions} from '../actions/TodoActions';
 
 export default class TodoItem extends Component {
     constructor(props) {
         super(props);
 
-        this.handleEdit = this.handleEdit.bind(this);
-        this.handleDelete = this.handleDelete.bind(this);
-        this.handleStatus = this.handleStatus.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-
         this.state = {
             task_name: this.props.task.task_name || '',
-            taskCompleted: false,
+            taskCompleted: null,
             editMode: this.props.editMode || false,
         }
+
+        this.handleEdit = this.handleEdit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+
+        this._update = this._update.bind(this);
+        this._change = this._change.bind(this);
+        this._delete = this._delete.bind(this);
     }
 
     handleEdit = (event) => {
@@ -23,34 +25,32 @@ export default class TodoItem extends Component {
         this.setState({editMode: !this.state.editMode});
     }
 
-    handleSubmit = (event) => {
-        event.preventDefault();
-        let task_name = this.state.task_name;
-        this.props.editTodo(this.props.task.id, task_name, this.props.task.completed);
-        this.setState({editMode: !this.state.editMode});
-    }
-
-    handleDelete = (event) => {
-        event.preventDefault();
-        this.props.handleDelete(this.props.task.id);
-    }
-
-    handleStatus = (event) => {
-        event.preventDefault();
-        this.props.handleStatus(this.props.task.id);
-        this.setState({
-            taskCompleted: !this.state.taskCompleted
-        });
-    }
-
     handleChange = (event) => {
         event.preventDefault();
         this.setState({task_name: event.target.value.trim()});
+        TodoActions.updateTodo(this.props.index, this.state);
+    }
+
+    _update = (event) => {
+        event.preventDefault();
+        TodoActions.updateTodo(this.props.index, this.state);
+        this.setState({editMode: !this.state.editMode});
+    }
+
+    _change = (event) => {
+        event.preventDefault();
+        let status = !this.state.taskCompleted;
+        this.setState({taskCompleted: status});
+        TodoActions.changeStatus(this.props.index, status);
+        this.props.onChange();
+    }
+
+    _delete = (event) => {
+        event.preventDefault();
+        TodoActions.deleteTodo(this.props.index);
     }
 
     render() {
-        const {task} = this.props
-
         let element;
         let class_names = "incomplete";
 
@@ -67,7 +67,7 @@ export default class TodoItem extends Component {
                         value={this.state.task_name}
                         onChange={this.handleChange}
                     />
-                    <Glyphicon glyph='floppy-save' onClick={this.handleSubmit}/>
+                    <Glyphicon glyph='floppy-save' onClick={this._update}/>
                 </div>
             )
         } else {
@@ -76,13 +76,13 @@ export default class TodoItem extends Component {
                     <input
                         className={class_names}
                         type="text"
-                        value={task.task_name}
+                        value={this.state.task_name}
                         disabled={true}
                         onChange={this.handleChange}
                     />
-                    <Glyphicon glyph='check' onClick={this.handleStatus}/>
+                    <Glyphicon glyph='check' onClick={this._change}/>
                     <Glyphicon glyph='edit' onClick={this.handleEdit}/>
-                    <Glyphicon glyph='remove' onClick={this.handleDelete}/>
+                    <Glyphicon glyph='remove' onClick={this._delete}/>
                 </div>
             )
         }

@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {TodoActions} from '../actions/TodoActions.js';
 import Glyphicon from '@strongdm/glyphicon';
 
 export default class NewTask extends Component {
@@ -7,21 +8,23 @@ export default class NewTask extends Component {
 
         this.state = {
             task_name: this.props.task_name || '',
+            taskCompleted: false,
             completed: false
         }
 
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this._create = this._create.bind(this);
+        this._change = this._change.bind(this);
     }
 
-    handleChange = (event) => {
-        this.setState({task_name: event.target.value.trim()});
-    }
-
-    handleSubmit = () => {
-        let task_name = this.state.task_name;
-        this.props.onSave(task_name);
+    _create = (event) => {
+        event.preventDefault();
+        TodoActions.createTodo(this.state);
         this.setState({task_name: ''});
+    }
+
+    _change = (event) => {
+        event.preventDefault();
+        this.setState({task_name: event.target.value.trim()});
     }
 
     render() {
@@ -32,9 +35,9 @@ export default class NewTask extends Component {
                            type="text"
                            placeholder={this.props.placeholder}
                            value={this.state.task_name}
-                           onChange={this.handleChange}
+                           onChange={this._change}
                     />
-                    <Glyphicon glyph='plus' onClick={this.handleSubmit}/>
+                    <Glyphicon glyph='plus' onClick={this._create}/>
                 </div>
             </>
         )
